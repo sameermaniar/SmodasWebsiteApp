@@ -1,0 +1,59 @@
+{
+  "project_info": {
+    "project_number": "601124187491",
+    "firebase_url": "https://smodasapp.firebaseio.com",
+    "project_id": "smodasapp",
+    "storage_bucket": "smodasapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601124187491:android:d502213b2cd8249d",
+        "android_client_info": {
+          "package_name": "in.co.tripin.smodaswebsiteapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "601124187491-nam20n364352fuuit0nvhie7fbnt59se.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "in.co.tripin.smodaswebsiteapp",
+            "certificate_hash": "f09ec7589c8bf72b98e2e7f8d34f0749a869c4d4"
+          }
+        },
+        {
+          "client_id": "601124187491-nhi99vqcsu1nv4eqc5grjdocfis74p72.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "601124187491-nhi99vqcsu1nv4eqc5grjdocfis74p72.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdAQ5wXhPHUwTos9UGhhMo3r6LfN6owDU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "601124187491-nhi99vqcsu1nv4eqc5grjdocfis74p72.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
