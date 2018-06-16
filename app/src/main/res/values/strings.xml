@@ -2,4 +2,14 @@
     <string name="app_name">Smodas</string>
     <string name="no_internet_connection">No Internet</string>
     <string name="auth_landing_note">SMoDas Offers Unique apparel, and Accessories to Men\'s and Womens\'s who value their versetalitiy, style and comfort</string>
+    <string name="err_mobile">Improper Mobile Number</string>
+    <string name="err_email">Check Email</string>
+    <string name="err_password">Password cant be empty</string>
+    <string name="title_activity_main_nav">MainNavActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Smodas</string>
+    <string name="nav_header_subtitle">by SMINTERCONNECT</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
 </resources>

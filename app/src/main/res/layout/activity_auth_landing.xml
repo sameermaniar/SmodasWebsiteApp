@@ -4,8 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
     tools:context=".AuthLandingActivity">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.466"
+        app:srcCompat="@drawable/splash" />
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -20,24 +31,28 @@
         android:background="@drawable/rounder_rectangle"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.25">
+        app:layout_constraintVertical_bias="0.41000003">
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SMODAS" />
+            android:text="SMODAS"
+            android:textColor="@color/common_google_signin_btn_text_dark_focused"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="by SMINTERCONNECT" />
+            android:text="by SMINTERCONNECT"
+            android:textSize="12sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -57,29 +72,34 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
         <TextView
-            android:id="@+id/textView3"
+            android:id="@+id/signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:background="@drawable/rounder_rectangle"
+            android:gravity="center_horizontal"
             android:padding="20dp"
             android:text="Sign Up"
-            android:textColor="@android:color/holo_red_light" />
+            android:textColor="@android:color/holo_red_light"
+            android:textStyle="bold"
+            android:layout_marginLeft="8dp" />
 
         <TextView
-            android:id="@+id/textView4"
+            android:id="@+id/signin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
             android:layout_weight="1"
             android:background="@drawable/rounder_rectangle"
+            android:gravity="center_horizontal"
             android:padding="20dp"
             android:text="Sign In"
             android:textColor="@android:color/holo_red_light"
-            android:layout_marginRight="8dp" />
+            android:textStyle="bold" />
     </LinearLayout>
 
     <TextView
@@ -92,9 +112,12 @@
         android:layout_marginRight="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
+        android:gravity="center_horizontal"
         android:padding="10dp"
         android:text="@string/auth_landing_note"
         android:textColor="@color/browser_actions_bg_grey"
+        android:textSize="12sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
