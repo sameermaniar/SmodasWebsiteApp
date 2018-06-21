@@ -275,6 +275,10 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
 
+    public void redirectToSignIn(View view) {
+        startActivity(new Intent(SignUpActivity.this,SignInActivity.class));
+        finish();
+    }
 }
 
 

@@ -1,6 +1,7 @@
 package in.co.tripin.smodaswebsiteapp;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -23,6 +24,7 @@ public class MainNavActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private WebView webView;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +32,12 @@ public class MainNavActivity extends AppCompatActivity
         setContentView(R.layout.activity_main_nav);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
+        mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() == null) {
+            startActivity(new Intent(MainNavActivity.this, SplashActivity.class));
+            finish();
+        }
 
         setupWebView();
 
@@ -51,7 +59,6 @@ public class MainNavActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
-
 
 
     private void setupWebView() {
@@ -98,19 +105,52 @@ public class MainNavActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_notifications) {
+            startActivity(new Intent(MainNavActivity.this, NotificationsActivity.class));
+        } else if (id == R.id.nav_logout) {
+
             FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(MainNavActivity.this,AuthLandingActivity.class));
+            startActivity(new Intent(MainNavActivity.this, AuthLandingActivity.class));
             finish();
-        } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
+        } else if (id == R.id.nav_youtube) {
 
-        } else if (id == R.id.nav_manage) {
+//            String url = "http://www.example.com";
+//            Intent i = new Intent(Intent.ACTION_VIEW);
+//            i.setData(Uri.parse(url));
+//            startActivity(i);
 
-        } else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_instagram) {
 
-        } else if (id == R.id.nav_send) {
+            String url = "https://www.instagram.com/smodassmi/";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+
+        } else if (id == R.id.nav_twitter) {
+
+//            String url = "http://www.example.com";
+//            Intent i = new Intent(Intent.ACTION_VIEW);
+//            i.setData(Uri.parse(url));
+//            startActivity(i);
+
+        }
+        else if (id == R.id.nav_share) {
+
+            Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+            sharingIntent.setType("text/plain");
+            String shareBodyText = "Check it out. Smodas Android App!";
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"Subject here");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBodyText);
+            startActivity(Intent.createChooser(sharingIntent, "Shearing Option"));
+
+        }
+        else if (id == R.id.nav_rate) {
+
+//            String url = "http://www.example.com";
+//            Intent i = new Intent(Intent.ACTION_VIEW);
+//            i.setData(Uri.parse(url));
+//            startActivity(i);
 
         }
 

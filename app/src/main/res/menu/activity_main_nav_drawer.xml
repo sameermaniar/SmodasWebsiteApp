@@ -9,7 +9,7 @@
             android:icon="@drawable/ic_notifications_black_24dp"
             android:title="Notifications" />
         <item
-            android:id="@+id/nav_camera"
+            android:id="@+id/nav_logout"
             android:icon="@drawable/ic_power_settings_new_black_24dp"
             android:title="Log Out" />
 
@@ -18,15 +18,15 @@
     <item android:title="Check Us On">
         <menu>
             <item
-                android:id="@+id/nav_gallery"
+                android:id="@+id/nav_youtube"
                 android:icon="@drawable/ic_ondemand_video_black_24dp"
                 android:title="YouTube" />
             <item
-                android:id="@+id/nav_slideshow"
+                android:id="@+id/nav_instagram"
                 android:icon="@drawable/ic_menu_gallery"
                 android:title="Instagram" />
             <item
-                android:id="@+id/nav_manage"
+                android:id="@+id/nav_twitter"
                 android:icon="@drawable/ic_message_black_24dp"
                 android:title="Twitter" />
         </menu>
@@ -39,7 +39,7 @@
                 android:icon="@drawable/ic_menu_share"
                 android:title="Share This App" />
             <item
-                android:id="@+id/nav_send"
+                android:id="@+id/nav_rate"
                 android:icon="@drawable/ic_menu_send"
                 android:title="Rate On Playstore" />
         </menu>

@@ -52,6 +52,7 @@ public class SignInActivity extends AppCompatActivity {
     private AwesomeValidation mAwesomeValidation;
     private FirebaseAuth mAuth;
     private Dialog otpDialog;
+    private boolean isForgotPassword = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -258,7 +259,14 @@ public class SignInActivity extends AppCompatActivity {
                             Log.d(TAG, "signInWithCredential:success");
 
                             FirebaseUser user = task.getResult().getUser();
-                            startActivity(new Intent(SignInActivity.this, MainNavActivity.class));
+                            if(isForgotPassword){
+                                Intent i =  new Intent(SignInActivity.this,ForgetPasswordActivity.class);
+                                i.putExtra("mobile",user.getPhoneNumber());
+                                startActivity(i);
+
+                            }else {
+                                startActivity(new Intent(SignInActivity.this, MainNavActivity.class));
+                            }
                             finish();
                             // ...
                         } else {
@@ -272,4 +280,15 @@ public class SignInActivity extends AppCompatActivity {
                 });
     }
 
+    public void forgotPassword(View view) {
+
+        if(mMobile.getText().toString().trim().isEmpty()||mCountryCode.getText().toString().isEmpty()){
+            Toast.makeText(getApplicationContext(),"Enter mobile & tap Forgot Password",Toast.LENGTH_LONG).show();
+        }else {
+            startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
+            logIn.setText("Sending OTP... (Resend)");
+            mVerificationState = 1;
+            isForgotPassword = true;
+        }
+    }
 }
