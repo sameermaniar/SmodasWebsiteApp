@@ -28,15 +28,21 @@
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/rounder_rectangle"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="8dp"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.41000003">
+        app:layout_constraintVertical_bias="0.44">
+
+        <ImageView
+            android:id="@+id/imageView6"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            app:srcCompat="@drawable/smodas" />
 
         <TextView
             android:id="@+id/textView"
@@ -45,14 +51,16 @@
             android:text="SMODAS"
             android:textColor="@color/common_google_signin_btn_text_dark_focused"
             android:textSize="14sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="by SMINTERCONNECT"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
@@ -69,22 +77,23 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.25">
 
         <TextView
             android:id="@+id/signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
+            android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
-            android:background="@drawable/rounder_rectangle"
+            android:background="@drawable/main_rounded_selector"
             android:gravity="center_horizontal"
             android:padding="20dp"
             android:text="Sign Up"
             android:textColor="@android:color/holo_red_light"
-            android:textStyle="bold"
-            android:layout_marginLeft="8dp" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/signin"
@@ -94,7 +103,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
             android:layout_weight="1"
-            android:background="@drawable/rounder_rectangle"
+            android:background="@drawable/main_rounded_selector"
             android:gravity="center_horizontal"
             android:padding="20dp"
             android:text="Sign In"

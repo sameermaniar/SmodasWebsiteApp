@@ -1,5 +1,6 @@
 package in.co.tripin.smodaswebsiteapp;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.concurrent.TimeUnit;
 
+import dmax.dialog.SpotsDialog;
 import in.co.tripin.smodaswebsiteapp.models.UserPojo;
 
 import static com.basgeekball.awesomevalidation.ValidationStyle.BASIC;
@@ -53,6 +55,8 @@ public class SignInActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private Dialog otpDialog;
     private boolean isForgotPassword = false;
+    private AlertDialog dialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +64,13 @@ public class SignInActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_in);
 
         mAuth = FirebaseAuth.getInstance();
+        dialog = new SpotsDialog.Builder()
+                .setContext(this)
+                .setCancelable(false)
+                .setMessage("Verifying")
+                .build();
+
+
 
         setTitle("SignIn");
         init();
@@ -67,6 +78,13 @@ public class SignInActivity extends AppCompatActivity {
         setListners();
         setupPhoneVerificationCallback();
         createOTPDialog();
+
+        //set mobile if from signup
+        if(getIntent().getExtras()!=null){
+            if(getIntent().getExtras().getString("mobile")!=null){
+                mMobile.setText(getIntent().getExtras().getString("mobile").trim());
+            }
+        }
     }
 
     private void init() {
@@ -96,7 +114,7 @@ public class SignInActivity extends AppCompatActivity {
                         //check Password from Firebase
                         final FirebaseDatabase database = FirebaseDatabase.getInstance();
                         DatabaseReference myRef = database.getReference("users");
-                        logIn.setText("Checking Details...");
+                        dialog.show();
 
                         myRef.child(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -106,15 +124,16 @@ public class SignInActivity extends AppCompatActivity {
                                     if (userPojo.getmUserPassword().equals(mPassword.getText().toString().trim())) {
                                         //Proceed mobile verification
                                         startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
-                                        logIn.setText("Sending OTP... (Resend)");
                                         mVerificationState = 1;
                                     } else {
                                         //password incorrect
+                                        dialog.dismiss();
                                         Toast.makeText(getApplicationContext(), "Password Incorrect", Toast.LENGTH_LONG).show();
                                         logIn.setText("Sign In");
 
                                     }
                                 } else {
+                                    dialog.dismiss();
                                     Toast.makeText(getApplicationContext(), "Sign In First!", Toast.LENGTH_LONG).show();
                                     logIn.setText("Sign In");
 
@@ -124,6 +143,7 @@ public class SignInActivity extends AppCompatActivity {
                             @Override
                             public void onCancelled(@NonNull DatabaseError databaseError) {
                                 logIn.setText("Sign In");
+                                dialog.dismiss();
 
                             }
                         });
@@ -131,7 +151,7 @@ public class SignInActivity extends AppCompatActivity {
 
                     } else {
                         resendOTP();
-                        logIn.setText("Resending OTP");
+                        dialog.show();
                     }
                 }
             }
@@ -174,6 +194,7 @@ public class SignInActivity extends AppCompatActivity {
                 //     detect the incoming verification SMS and perform verification without
                 //     user action.
                 Log.d(TAG, "onVerificationCompleted:" + credential);
+                dialog.dismiss();
 
                 signInWithPhoneAuthCredential(credential);
             }
@@ -183,6 +204,7 @@ public class SignInActivity extends AppCompatActivity {
                 // This callback is invoked in an invalid request for verification is made,
                 // for instance if the the phone number format is not valid.
                 Log.w(TAG, "onVerificationFailed", e);
+                dialog.dismiss();
 
                 if (e instanceof FirebaseAuthInvalidCredentialsException) {
                     // Invalid request
@@ -204,7 +226,7 @@ public class SignInActivity extends AppCompatActivity {
                 // now need to ask the user to enter the code and then construct a credential
                 // by combining the code with a verification ID.
                 Log.d(TAG, "onCodeSent:" + verificationId);
-                logIn.setText("OTP Sent, Verifying...");
+                dialog.dismiss();
                 otpDialog.show();
 
                 // Save verification ID and resending token so we can use them later
@@ -220,7 +242,7 @@ public class SignInActivity extends AppCompatActivity {
         // custom dialog
         otpDialog = new Dialog(activity);
         otpDialog.setContentView(R.layout.enterotp_dialog);
-        otpDialog.setTitle("OTP");
+        otpDialog.setTitle("Sending OTP");
 
 
         TextView verifyButton = otpDialog.findViewById(R.id.verifyButton);
@@ -250,6 +272,7 @@ public class SignInActivity extends AppCompatActivity {
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
 
+
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -260,6 +283,8 @@ public class SignInActivity extends AppCompatActivity {
 
                             FirebaseUser user = task.getResult().getUser();
                             if(isForgotPassword){
+                                otpDialog.dismiss();
+
                                 Intent i =  new Intent(SignInActivity.this,ForgetPasswordActivity.class);
                                 i.putExtra("mobile",user.getPhoneNumber());
                                 startActivity(i);
@@ -285,8 +310,8 @@ public class SignInActivity extends AppCompatActivity {
         if(mMobile.getText().toString().trim().isEmpty()||mCountryCode.getText().toString().isEmpty()){
             Toast.makeText(getApplicationContext(),"Enter mobile & tap Forgot Password",Toast.LENGTH_LONG).show();
         }else {
+            dialog.show();
             startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
-            logIn.setText("Sending OTP... (Resend)");
             mVerificationState = 1;
             isForgotPassword = true;
         }

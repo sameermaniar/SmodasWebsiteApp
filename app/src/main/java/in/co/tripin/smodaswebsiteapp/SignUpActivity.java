@@ -1,5 +1,6 @@
 package in.co.tripin.smodaswebsiteapp;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -29,12 +30,16 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import dmax.dialog.SpotsDialog;
 import in.co.tripin.smodaswebsiteapp.models.UserPojo;
 
 import static com.basgeekball.awesomevalidation.ValidationStyle.BASIC;
@@ -54,6 +59,8 @@ public class SignUpActivity extends AppCompatActivity {
     private AwesomeValidation mAwesomeValidation;
     private FirebaseAuth mAuth;
     private Dialog otpDialog;
+    private AlertDialog dialog;
+
 
 
     @Override
@@ -61,6 +68,13 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
         FirebaseApp.initializeApp(this);
+
+        dialog = new SpotsDialog.Builder()
+                .setContext(this)
+                .setCancelable(false)
+                .setMessage("Signing Up")
+                .build();
+
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -104,12 +118,12 @@ public class SignUpActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (mAwesomeValidation.validate()) {
                     if (mVerificationState == 0) {
+                        dialog.show();
+
                         startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
-                        createAccount.setText("Sending OTP... (Resend)");
                         mVerificationState = 1;
                     } else {
                         resendOTP();
-                        createAccount.setText("Resending OTP");
                     }
                 }
             }
@@ -117,7 +131,32 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
 
-    private void startMobileVerification(String s) {
+    private void startMobileVerification(final String s) {
+
+        FirebaseDatabase.getInstance().getReference().child("users").child(s).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    dialog.dismiss();
+                    createAccount.setText("Sign Up");
+                    Toast.makeText(getApplicationContext(),"Mobile Already Registered, Sign In!",Toast.LENGTH_LONG).show();
+                }else {
+                   verifyy(s);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+
+    }
+
+    private void verifyy(String s) {
+
         PhoneAuthProvider.getInstance().verifyPhoneNumber(
                 s,        // Phone number to verify
                 60,                 // Timeout duration
@@ -153,6 +192,7 @@ public class SignUpActivity extends AppCompatActivity {
                 // 2 - Auto-retrieval. On some devices Google Play services can automatically
                 //     detect the incoming verification SMS and perform verification without
                 //     user action.
+                dialog.dismiss();
                 Log.d(TAG, "onVerificationCompleted:" + credential);
 
                 signInWithPhoneAuthCredential(credential);
@@ -163,7 +203,7 @@ public class SignUpActivity extends AppCompatActivity {
                 // This callback is invoked in an invalid request for verification is made,
                 // for instance if the the phone number format is not valid.
                 Log.w(TAG, "onVerificationFailed", e);
-
+                dialog.dismiss();
                 if (e instanceof FirebaseAuthInvalidCredentialsException) {
                     // Invalid request
                     // ...
@@ -185,7 +225,9 @@ public class SignUpActivity extends AppCompatActivity {
                 // by combining the code with a verification ID.
                 Log.d(TAG, "onCodeSent:" + verificationId);
                 createAccount.setText("OTP Sent, Verifying...");
+                dialog.dismiss();
                 otpDialog.show();
+
 
                 // Save verification ID and resending token so we can use them later
                 mVerificationId = verificationId;
@@ -200,7 +242,7 @@ public class SignUpActivity extends AppCompatActivity {
         // custom dialog
         otpDialog = new Dialog(activity);
         otpDialog.setContentView(R.layout.enterotp_dialog);
-        otpDialog.setTitle("OTP");
+        otpDialog.setTitle("Sending OTP");
 
 
 
@@ -231,6 +273,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
 
+
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -240,6 +283,7 @@ public class SignUpActivity extends AppCompatActivity {
                             Log.d(TAG, "signInWithCredential:success");
 
                             FirebaseUser user = task.getResult().getUser();
+                            otpDialog.dismiss();
                             setupFirebaseDatabase();
 
 
@@ -256,6 +300,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void setupFirebaseDatabase() {
+        dialog.show();
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference myRef = database.getReference("users");
 
@@ -267,6 +312,7 @@ public class SignUpActivity extends AppCompatActivity {
         myRef.child(userPojo.getmUserMobile()).setValue(userPojo).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
+                dialog.dismiss();
                 startActivity(new Intent(SignUpActivity.this,MainNavActivity.class));
                 finish();
             }
@@ -276,7 +322,11 @@ public class SignUpActivity extends AppCompatActivity {
 
 
     public void redirectToSignIn(View view) {
-        startActivity(new Intent(SignUpActivity.this,SignInActivity.class));
+        Intent intent = new Intent(SignUpActivity.this,SignInActivity.class);
+        if(!mMobile.getText().toString().trim().isEmpty()){
+            intent.putExtra("mobile",mMobile.getText().toString().trim());
+        }
+        startActivity(intent);
         finish();
     }
 }

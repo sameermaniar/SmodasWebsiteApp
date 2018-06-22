@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 public class AuthLandingActivity extends AppCompatActivity {
 
     private TextView mSignUp,mSignIn;
@@ -16,6 +18,10 @@ public class AuthLandingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_auth_landing);
         init();
         setListners();
+
+        if(FirebaseAuth.getInstance().getCurrentUser()!=null){
+            finish();
+        }
 
     }
 

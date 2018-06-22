@@ -35,7 +35,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
+    implementation 'com.github.d-max:spots-dialog:1.1@aar'
+    implementation 'com.github.delight-im:Android-AdvancedWebView:v3.0.0'
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.firebaseui:firebase-ui-firestore:4.0.1'
     implementation 'com.firebaseui:firebase-ui-auth:4.0.1'

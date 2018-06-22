@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Smodas</string>
     <string name="no_internet_connection">No Internet</string>
-    <string name="auth_landing_note">SMoDas Offers Unique apparel, and Accessories to Men\'s and Womens\'s who value their versetalitiy, style and comfort</string>
+    <string name="auth_landing_note">Smodas offers unique apparel and Accessories to Men\'s, Women\'s and Kid\'s Who value the versatility, style and comfort.</string>
     <string name="err_mobile">Improper Mobile Number</string>
     <string name="err_email">Check Email</string>
     <string name="err_password">Password cant be empty</string>
