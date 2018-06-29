@@ -10,12 +10,23 @@ public class NotificationPojo {
     @ServerTimestamp
     private Date mTimeStamp;
 
+    private String mUrl;
+
     public NotificationPojo() {
     }
 
-    public NotificationPojo(String mTitle, String mMessage) {
+    public NotificationPojo(String mTitle, String mMessage, String mUrl) {
         this.mTitle = mTitle;
         this.mMessage = mMessage;
+        this.mUrl = mUrl;
+    }
+
+    public String getmUrl() {
+        return mUrl;
+    }
+
+    public void setmUrl(String mUrl) {
+        this.mUrl = mUrl;
     }
 
     public Date getmTimeStamp() {

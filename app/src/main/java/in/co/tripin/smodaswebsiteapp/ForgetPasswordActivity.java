@@ -42,9 +42,10 @@ public class ForgetPasswordActivity extends AppCompatActivity {
 
     private void addValidations() {
         awesomeValidation = new AwesomeValidation(ValidationStyle.BASIC);
-        awesomeValidation.addValidation(this, R.id.newpass1, R.id.newpass2, R.string.err_password_confirmation);
-        awesomeValidation.addValidation(this, R.id.newpass1, RegexTemplate.NOT_EMPTY, R.string.err_mobile);
-        awesomeValidation.addValidation(this, R.id.newpass2, RegexTemplate.NOT_EMPTY, R.string.err_mobile);
+        String regexPassword = ".{4,}";
+        awesomeValidation.addValidation(this, R.id.newpass1, regexPassword, R.string.invalid_password);
+        awesomeValidation.addValidation(this, R.id.newpass2, R.id.newpass1, R.string.err_password_confirmation);
+
     }
 
     private void setListners() {

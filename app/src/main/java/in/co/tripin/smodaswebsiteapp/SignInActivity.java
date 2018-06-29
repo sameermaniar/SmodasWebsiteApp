@@ -32,6 +32,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.keiferstone.nonet.NoNet;
 
 import java.util.concurrent.TimeUnit;
 
@@ -62,6 +63,10 @@ public class SignInActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+
+        NoNet.monitor(this)
+                .poll()
+                .snackbar();
 
         mAuth = FirebaseAuth.getInstance();
         dialog = new SpotsDialog.Builder()
@@ -101,6 +106,8 @@ public class SignInActivity extends AppCompatActivity {
         mAwesomeValidation.addValidation(this, R.id.mobile, RegexTemplate.NOT_EMPTY, R.string.err_mobile);
         mAwesomeValidation.addValidation(this, R.id.password, RegexTemplate.NOT_EMPTY, R.string.err_password);
         mAwesomeValidation.addValidation(this, R.id.countrycode, RegexTemplate.NOT_EMPTY, R.string.err_mobile);
+        String regexPassword = ".{4,}";
+        mAwesomeValidation.addValidation(this, R.id.password, regexPassword, R.string.invalid_password);
 
     }
 
@@ -134,8 +141,11 @@ public class SignInActivity extends AppCompatActivity {
                                     }
                                 } else {
                                     dialog.dismiss();
-                                    Toast.makeText(getApplicationContext(), "Sign In First!", Toast.LENGTH_LONG).show();
-                                    logIn.setText("Sign In");
+                                    Toast.makeText(getApplicationContext(), "User Don't exists, Sign UP First!", Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(SignInActivity.this,SignUpActivity.class);
+                                    intent.putExtra("mobile",mMobile.getText().toString().trim());
+                                    startActivity(intent);
+                                    finish();
 
                                 }
                             }
@@ -243,7 +253,7 @@ public class SignInActivity extends AppCompatActivity {
         otpDialog = new Dialog(activity);
         otpDialog.setContentView(R.layout.enterotp_dialog);
         otpDialog.setTitle("Sending OTP");
-
+        otpDialog.setCancelable(false);
 
         TextView verifyButton = otpDialog.findViewById(R.id.verifyButton);
         verifyButton.setOnClickListener(new View.OnClickListener() {
@@ -257,9 +267,12 @@ public class SignInActivity extends AppCompatActivity {
                     pinView.setError("Cannot be empty.");
                     return;
                 }
+                otpDialog.dismiss();
+
+                dialog.show();
+
                 verifyPhoneNumberWithCode(mVerificationId, code);
 
-                otpDialog.dismiss();
             }
         });
 
@@ -311,9 +324,36 @@ public class SignInActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(),"Enter mobile & tap Forgot Password",Toast.LENGTH_LONG).show();
         }else {
             dialog.show();
-            startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
-            mVerificationState = 1;
-            isForgotPassword = true;
+            FirebaseDatabase.getInstance().getReference().child("users").child(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    dialog.dismiss();
+                    if(dataSnapshot.exists()){
+                        startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
+                        mVerificationState = 1;
+                        isForgotPassword = true;
+                    }else {
+                        Toast.makeText(getApplicationContext(), "User Don't exists, Sign UP First!", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(SignInActivity.this,SignUpActivity.class);
+                        intent.putExtra("mobile",mMobile.getText().toString().trim());
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    dialog.dismiss();
+                    Toast.makeText(getApplicationContext(),"Try Again!",Toast.LENGTH_LONG).show();
+                }
+            });
+
+
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }

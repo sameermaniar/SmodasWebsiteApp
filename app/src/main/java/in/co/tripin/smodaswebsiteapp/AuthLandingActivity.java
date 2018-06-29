@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.keiferstone.nonet.NoNet;
 
 public class AuthLandingActivity extends AppCompatActivity {
 
@@ -18,6 +19,10 @@ public class AuthLandingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_auth_landing);
         init();
         setListners();
+
+        NoNet.monitor(this)
+                .poll()
+                .snackbar();
 
         if(FirebaseAuth.getInstance().getCurrentUser()!=null){
             finish();

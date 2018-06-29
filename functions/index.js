@@ -12,7 +12,8 @@ exports.createUpdate = functions.firestore
     const payload = {
        data: {
         title: newValue.mTitle,
-        msg: newValue.mMessage
+        msg: newValue.mMessage,
+        url: newValue.mUrl
       }
     };
     const options = {

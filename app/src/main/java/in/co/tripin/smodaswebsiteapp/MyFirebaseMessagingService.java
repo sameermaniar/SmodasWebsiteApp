@@ -30,18 +30,24 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
             String title = remoteMessage.getData().get("title");
             String msg = remoteMessage.getData().get("msg");
+            String url = remoteMessage.getData().get("url");
+
             Log.d(TAG, "title" + title);
-            sendNotification(msg,title);
+            sendNotification(msg, title, url);
         }
 
 
     }
 
 
-    private void sendNotification(String messageBody, String messageTitle) {
-        Intent intent = new Intent(this, MainNavActivity.class);
+    private void sendNotification(String messageBody, String messageTitle, String url) {
+        Intent intent;
+        intent = new Intent(this, MainNavActivity.class);
+        intent.putExtra("url", url);
+
+
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        int random = (int)((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
+        int random = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, random /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
@@ -49,7 +55,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.ic_launcher_background)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setContentTitle(messageTitle)
                         .setLights(Color.RED, 500, 500)
                         .setContentText(messageBody)

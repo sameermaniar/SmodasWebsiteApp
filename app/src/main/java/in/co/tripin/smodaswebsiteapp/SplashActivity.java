@@ -14,6 +14,7 @@ import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.keiferstone.nonet.NoNet;
 
 import java.util.Arrays;
 
@@ -21,10 +22,16 @@ public class SplashActivity extends AppCompatActivity {
 
     private static final String TAG = "Smodas Splash";
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+        NoNet.monitor(this)
+                .poll()
+                .snackbar();
 
         FirebaseApp.initializeApp(this);
 

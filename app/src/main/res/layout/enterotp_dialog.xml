@@ -63,7 +63,7 @@
         android:layout_marginRight="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/rounder_rectangle_red"
+        android:background="@drawable/main_rounded_red_selector"
         android:gravity="center_horizontal"
         android:padding="10dp"
         android:text="Verify"

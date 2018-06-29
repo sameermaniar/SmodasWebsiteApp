@@ -8,20 +8,20 @@
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginTop="5dp"
-    android:background="@drawable/rounder_rectangle"
+    android:background="@drawable/main_rounded_selector"
     android:elevation="1dp"
     android:paddingBottom="8dp">
 
     <ImageView
         android:id="@+id/imageViewicon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:srcCompat="@mipmap/ic_smodaslogo_round" />
 
     <TextView
         android:id="@+id/textViewtitle"
@@ -54,13 +54,16 @@
         android:id="@+id/textViewDiscription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="TextView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewicon" />
+        app:layout_constraintStart_toEndOf="@+id/imageViewicon"
+        app:layout_constraintTop_toBottomOf="@+id/textViewago" />
 
     <TextView
         android:id="@+id/textViewSareNotif"
@@ -74,7 +77,7 @@
         android:text="SHARE"
         android:textColor="@color/colorPrimary"
         android:textStyle="bold"
-        android:visibility="visible"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/textViewDiscription"
         app:layout_constraintTop_toBottomOf="@+id/textViewDiscription" />
 </android.support.constraint.ConstraintLayout>

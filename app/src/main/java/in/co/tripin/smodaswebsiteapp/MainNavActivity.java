@@ -1,6 +1,10 @@
 package in.co.tripin.smodaswebsiteapp;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.Image;
@@ -10,6 +14,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -31,32 +38,46 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Logger;
 import com.google.firebase.database.ValueEventListener;
+import com.keiferstone.nonet.NoNet;
+
+import java.util.ArrayList;
 
 import dmax.dialog.SpotsDialog;
 import im.delight.android.webview.AdvancedWebView;
 import in.co.tripin.smodaswebsiteapp.models.UserPojo;
 
 public class MainNavActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,AdvancedWebView.Listener {
+        implements NavigationView.OnNavigationItemSelectedListener, AdvancedWebView.Listener {
 
     private AdvancedWebView webView;
     private FirebaseAuth mAuth;
-    LinearLayout mNotification, mLogOut;
+    LinearLayout mNotification, mLogOut, mRedeem, mHelp, mReturn;
     LinearLayout mTwitter, mFacebook, myoututbe, mInstagram, mRate;
     private TextView mUserName;
     private ImageView mCancelPanel;
     private ImageView mEditProfile;
     private AlertDialog dialog;
-    DrawerLayout drawer;
-
-
+    private DrawerLayout drawer;
+    private String lastUrl = "";
+    private String currentUrl = "";
+    private Context mContext;
+    private ValueEventListener valueEventListener;
+    private ArrayList<String> backstack;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_nav);
+        backstack = new ArrayList<>();
+
+        NoNet.monitor(this)
+                .poll()
+                .snackbar();
+
+        mContext = this;
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
         mAuth = FirebaseAuth.getInstance();
@@ -96,28 +117,59 @@ public class MainNavActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        webView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        webView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        webView.onDestroy();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
     private void getUserData() {
-       dialog.show();
-       FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber()).addListenerForSingleValueEvent(new ValueEventListener() {
-           @Override
-           public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-               dialog.dismiss();
-               UserPojo userPojo = dataSnapshot.getValue(UserPojo.class);
-               if(userPojo!=null){
-                   if(!userPojo.getmUserFullName().isEmpty()){
-                       mUserName.setText(userPojo.getmUserFullName());
-                   }else {
-                       mUserName.setText(userPojo.getmUserMobile());
-                   }
-               }
-           }
+        dialog.show();
+        valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dialog.dismiss();
+                UserPojo userPojo = dataSnapshot.getValue(UserPojo.class);
+                if (userPojo != null) {
+                    if (userPojo.getmUserFullName() != null) {
+                        if (!userPojo.getmUserFullName().isEmpty()) {
+                            mUserName.setText(userPojo.getmUserFullName());
+                        } else {
+                            mUserName.setText(userPojo.getmUserMobile());
+                        }
+                    }
+                }
+            }
 
-           @Override
-           public void onCancelled(@NonNull DatabaseError databaseError) {
-               dialog.dismiss();
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                dialog.dismiss();
 
-           }
-       });
+            }
+        };
+
+        FirebaseDatabase.getInstance()
+                .getReference()
+                .child("users")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber())
+                .addValueEventListener(valueEventListener);
 
     }
 
@@ -139,8 +191,9 @@ public class MainNavActivity extends AppCompatActivity
         mEditProfile = header.findViewById(R.id.editprofile);
         mNotification = header.findViewById(R.id.notif);
         mLogOut = header.findViewById(R.id.logoutt);
-
-
+        mRedeem = header.findViewById(R.id.redeem);
+        mHelp = header.findViewById(R.id.help);
+        mReturn = header.findViewById(R.id.returnn);
 
     }
 
@@ -151,10 +204,18 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
 
-                String url = "https://www.facebook.com/SM-Interconnect-343886469465718/";
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
+                //getOpenFacebookIntent(getApplicationContext());
+                Intent intent;
+                try {
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://page/" + "221550015100537"));
+                } catch (Exception e) {
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/" + "221550015100537"));
+                }
+                startActivity(intent);
+
+//                drawer.closeDrawer(GravityCompat.START);
+//                webView.loadUrl("https://www.facebook.com/SM-Interconnect-343886469465718/");
+
             }
         });
 
@@ -166,6 +227,10 @@ public class MainNavActivity extends AppCompatActivity
         myoututbe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String url = "https://www.youtube.com/channel/UCCrAI6da_Tjcqyq_yPEU0PA";
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setData(Uri.parse(url));
+                startActivity(i);
             }
         });
         mInstagram.setOnClickListener(new View.OnClickListener() {
@@ -182,6 +247,7 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.closeDrawer(GravityCompat.START);
+                rateApp();
             }
         });
 
@@ -189,13 +255,19 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.closeDrawer(GravityCompat.START);
-                startActivity(new Intent(MainNavActivity.this, NotificationsActivity.class));
+                startActivityForResult(new Intent(MainNavActivity.this, NotificationsActivity.class), 1);
+
             }
         });
 
         mLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                FirebaseDatabase.getInstance()
+                        .getReference()
+                        .child("users")
+                        .child(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber()).removeEventListener(valueEventListener);
 
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(MainNavActivity.this, AuthLandingActivity.class));
@@ -212,7 +284,32 @@ public class MainNavActivity extends AppCompatActivity
         mEditProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(),"Edit User profile",Toast.LENGTH_SHORT).show();
+                drawer.closeDrawer(GravityCompat.START);
+                startActivity(new Intent(MainNavActivity.this, EditProfileActivity.class));
+            }
+        });
+
+        mRedeem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.closeDrawer(GravityCompat.START);
+                webView.loadUrl("http://tiny.cc/SMODASbookmyshowoffer");
+            }
+        });
+
+        mHelp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.closeDrawer(GravityCompat.START);
+                webView.loadUrl("https://smodas.wooplr.com/faq");
+            }
+        });
+
+        mReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                drawer.closeDrawer(GravityCompat.START);
+                webView.loadUrl("https://smodas.wooplr.com/check-order-status");
             }
         });
 
@@ -221,18 +318,152 @@ public class MainNavActivity extends AppCompatActivity
 
     private void setupWebView() {
         webView = findViewById(R.id.webview);
+        webView.getSettings().setSupportMultipleWindows(true);
         webView.setListener(this, this);
-        webView.loadUrl("https://smodas.wooplr.com/");
+        if (getIntent().getExtras() == null) {
+            webView.loadUrl("https://smodas.wooplr.com/");
+        } else {
+            if (getIntent().getExtras().getString("url") == null) {
+                webView.loadUrl("https://smodas.wooplr.com/");
+            } else {
+                if (getIntent().getExtras().getString("url").isEmpty()) {
+                    webView.loadUrl("https://smodas.wooplr.com/");
+                } else {
+                    webView.loadUrl(getIntent().getExtras().getString("url"));
+                }
+            }
+        }
     }
 
     @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+    protected void onStop() {
+        super.onStop();
+
+    }
+
+//    @Override
+//    public void onBackPressed() {
+//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+//        if (drawer.isDrawerOpen(GravityCompat.START)) {
+//            drawer.closeDrawer(GravityCompat.START);
+//        } else {
+//            if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
+//                AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
+//                builder.setTitle(R.string.app_name);
+//                builder.setIcon(R.mipmap.ic_launcher);
+//                builder.setMessage("Do you want to exit?")
+//                        .setCancelable(false)
+//                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+//                            public void onClick(DialogInterface dialog, int id) {
+//                                finish();
+//                            }
+//                        })
+//                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+//                            public void onClick(DialogInterface dialog, int id) {
+//                                dialog.cancel();
+//                            }
+//                        });
+//                AlertDialog alert = builder.create();
+//                alert.show();
+//            } else {
+//
+//                //go to backstack
+//
+//                if (webView.getUrl().equals(webView.getOriginalUrl())) {
+//                    //if landing url is original the first go to main url
+//                    webView.loadUrl("https://smodas.wooplr.com/");
+//                } else {
+//
+//                    //go to backstack
+//                    webView.goBack();
+//                }
+//            }
+//
+//        }
+//    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_BACK:
+                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                    if (drawer.isDrawerOpen(GravityCompat.START)) {
+                        drawer.closeDrawer(GravityCompat.START);
+                    } else {
+                        if (webView.canGoBack()) {
+                            webView.goBack();
+                            if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
+                                builder.setTitle(R.string.app_name);
+                                builder.setIcon(R.mipmap.ic_launcher);
+                                builder.setMessage("Do you want to exit?")
+                                        .setCancelable(false)
+                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                finish();
+                                            }
+                                        })
+                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+                                AlertDialog alert = builder.create();
+                                alert.show();
+                            } else {
+
+                                //go to backstack
+
+                                if (webView.getUrl().equals(webView.getOriginalUrl())) {
+                                    //if landing url is original the first go to main url
+                                    webView.loadUrl("https://smodas.wooplr.com/");
+                                } else {
+
+                                    //go to backstack
+                                    webView.goBack();
+                                }
+                            }
+                        } else {
+                            if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
+                                builder.setTitle(R.string.app_name);
+                                builder.setIcon(R.mipmap.ic_launcher);
+                                builder.setMessage("Do you want to exit?")
+                                        .setCancelable(false)
+                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                finish();
+                                            }
+                                        })
+                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+                                AlertDialog alert = builder.create();
+                                alert.show();
+                            } else {
+
+                                //go to backstack
+
+                                if (webView.getUrl().equals(webView.getOriginalUrl())) {
+                                    //if landing url is original the first go to main url
+                                    webView.loadUrl("https://smodas.wooplr.com/");
+                                } else {
+
+                                    //go to backstack
+                                    webView.goBack();
+                                }
+                            }
+                        }
+                    }
+
+                    return true;
+            }
+
         }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
@@ -292,18 +523,16 @@ public class MainNavActivity extends AppCompatActivity
 //            i.setData(Uri.parse(url));
 //            startActivity(i);
 
-        }
-        else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_share) {
 
             Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
             sharingIntent.setType("text/plain");
             String shareBodyText = "Check it out. Smodas Android App!";
-            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"Subject here");
+            sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Subject here");
             sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBodyText);
             startActivity(Intent.createChooser(sharingIntent, "Shearing Option"));
 
-        }
-        else if (id == R.id.nav_rate) {
+        } else if (id == R.id.nav_rate) {
 
 //            String url = "http://www.example.com";
 //            Intent i = new Intent(Intent.ACTION_VIEW);
@@ -318,17 +547,51 @@ public class MainNavActivity extends AppCompatActivity
 
     @Override
     public void onPageStarted(String url, Bitmap favicon) {
+        dialog.show();
+        currentUrl = url;
+        Log.v("OnPageStarted : ", url);
+
+//        if(url.equals("https://smodas.wooplr.com/")){
+//            if(backstack.size()>3){
+//
+//                    webView.loadUrl(backstack.get(backstack.size()-2));
+//                    Log.v("OnPageSt: ",backstack.get(backstack.size()-2));
+//                    backstack.remove(backstack.size()-2);
+//
+//
+//            }
+//
+//        }
+
+
+        if (webView.getUrl().equals("https://smodas.wooplr.com/dashboard/feed")) {
+            webView.onBackPressed();
+//            webView.loadUrl(mUrlStack.get(mUrlStack.size()-3));
+//            Log.v("OnPageStarted -3 : ", mUrlStack.get(mUrlStack.size()-3));
+
+        } else if (webView.getUrl().equals("https://www.wooplr.com/account/login-new")) {
+            webView.loadUrl("https://smodas.wooplr.com/");
+        }
+
+//        if(!url.contains("https://")){
+//            dialog.dismiss();
+//            webView.onBackPressed();
+//        }
 
     }
 
     @Override
     public void onPageFinished(String url) {
+        dialog.dismiss();
+        backstack.add(url);
+        Log.v("OnPageFinished : ", url);
 
     }
 
     @Override
     public void onPageError(int errorCode, String description, String failingUrl) {
-
+        dialog.dismiss();
+        webView.onBackPressed();
     }
 
     @Override
@@ -340,4 +603,52 @@ public class MainNavActivity extends AppCompatActivity
     public void onExternalPageRequest(String url) {
 
     }
+
+    void rateApp() {
+        Uri uri = Uri.parse("market://details?id=" + mContext.getPackageName());
+        Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+        // To count with Play market backstack, After pressing back button,
+        // to taken back to our application, we need to add following flags to intent.
+        goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
+                Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+        try {
+            startActivity(goToMarket);
+        } catch (ActivityNotFoundException e) {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("http://play.google.com/store/apps/details?id=" + mContext.getPackageName())));
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        Log.v("OnActResult: ", "On Activity Result : result code: " + resultCode + " request code:" + requestCode);
+
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == 1) {
+                Toast.makeText(getApplicationContext(), "Notification Redirect!", Toast.LENGTH_SHORT).show();
+                String url = intent.getStringExtra("url");
+                webView.loadUrl(url);
+
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "Address not selected!", Toast.LENGTH_SHORT).show();
+        }
+
+
+    }
+
+    public static Intent getOpenFacebookIntent(Context context) {
+
+        try {
+            context.getPackageManager().getPackageInfo("com.facebook.katana", 0);
+            return new Intent(Intent.ACTION_VIEW, Uri.parse("fb://page/173533596648724"));
+        } catch (Exception e) {
+            return new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/saniva.maniayar"));
+        }
+    }
+
+
 }

@@ -21,6 +21,7 @@ import com.chaos.view.PinView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.collect.Range;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.FirebaseTooManyRequestsException;
@@ -35,6 +36,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.keiferstone.nonet.NoNet;
 
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -69,6 +71,10 @@ public class SignUpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sign_up);
         FirebaseApp.initializeApp(this);
 
+        NoNet.monitor(this)
+                .poll()
+                .snackbar();
+
         dialog = new SpotsDialog.Builder()
                 .setContext(this)
                 .setCancelable(false)
@@ -78,12 +84,20 @@ public class SignUpActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+
+
         setTitle("SignUp");
         init();
         setUpValidation();
         setListners();
         setupPhoneVerificationCallback();
         createOTPDialog();
+
+        if(getIntent().getExtras()!=null){
+            if(getIntent().getExtras().getString("mobile")!=null){
+                mMobile.setText(getIntent().getExtras().getString("mobile"));
+            }
+        }
 
 
     }
@@ -106,6 +120,8 @@ public class SignUpActivity extends AppCompatActivity {
         mAwesomeValidation.addValidation(this, R.id.countrycode, RegexTemplate.NOT_EMPTY, R.string.err_mobile);
         mAwesomeValidation.addValidation(this, R.id.email, RegexTemplate.NOT_EMPTY, R.string.err_email);
         mAwesomeValidation.addValidation(this, R.id.password, RegexTemplate.NOT_EMPTY, R.string.err_password);
+        String regexPassword = ".{4,}";
+        mAwesomeValidation.addValidation(this, R.id.password, regexPassword, R.string.invalid_password);
 
 
     }
@@ -117,14 +133,19 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (mAwesomeValidation.validate()) {
-                    if (mVerificationState == 0) {
-                        dialog.show();
+                    if(mPassword.getText().toString().length()<4){
+                        Toast.makeText(getApplicationContext(),"Password To Short, Above 4 digits works!",Toast.LENGTH_LONG).show();
+                    }else {
+                        if (mVerificationState == 0) {
+                            dialog.show();
 
-                        startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
-                        mVerificationState = 1;
-                    } else {
-                        resendOTP();
+                            startMobileVerification(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
+                            mVerificationState = 1;
+                        } else {
+                            resendOTP();
+                        }
                     }
+
                 }
             }
         });
@@ -140,6 +161,10 @@ public class SignUpActivity extends AppCompatActivity {
                     dialog.dismiss();
                     createAccount.setText("Sign Up");
                     Toast.makeText(getApplicationContext(),"Mobile Already Registered, Sign In!",Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(SignUpActivity.this,SignInActivity.class);
+                    intent.putExtra("mobile",s);
+                    startActivity(intent);
+                    finish();
                 }else {
                    verifyy(s);
                 }
@@ -243,6 +268,7 @@ public class SignUpActivity extends AppCompatActivity {
         otpDialog = new Dialog(activity);
         otpDialog.setContentView(R.layout.enterotp_dialog);
         otpDialog.setTitle("Sending OTP");
+        otpDialog.setCancelable(false);
 
 
 
@@ -258,9 +284,10 @@ public class SignUpActivity extends AppCompatActivity {
                     pinView.setError("Cannot be empty.");
                     return;
                 }
+
+                dialog.show();
                 verifyPhoneNumberWithCode(mVerificationId, code);
 
-                otpDialog.dismiss();
             }
         });
 
