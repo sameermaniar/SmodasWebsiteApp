@@ -205,13 +205,15 @@ public class MainNavActivity extends AppCompatActivity
             public void onClick(View v) {
 
                 //getOpenFacebookIntent(getApplicationContext());
-                Intent intent;
                 try {
+                    Intent intent;
                     intent = new Intent(Intent.ACTION_VIEW, Uri.parse("fb://page/" + "221550015100537"));
+                    startActivity(intent);
                 } catch (Exception e) {
+                    Intent intent;
                     intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/" + "221550015100537"));
+                    startActivity(intent);
                 }
-                startActivity(intent);
 
 //                drawer.closeDrawer(GravityCompat.START);
 //                webView.loadUrl("https://www.facebook.com/SM-Interconnect-343886469465718/");
@@ -392,7 +394,6 @@ public class MainNavActivity extends AppCompatActivity
                         drawer.closeDrawer(GravityCompat.START);
                     } else {
                         if (webView.canGoBack()) {
-                            webView.goBack();
                             if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
                                 builder.setTitle(R.string.app_name);
@@ -420,8 +421,16 @@ public class MainNavActivity extends AppCompatActivity
                                     webView.loadUrl("https://smodas.wooplr.com/");
                                 } else {
 
-                                    //go to backstack
-                                    webView.goBack();
+                                    if (backstack.get(backstack.size() - 1).contains("sizeModal")) {
+                                        webView.loadUrl(backstack.get(backstack.size() - 2));
+                                        backstack.remove(backstack.size() - 1);
+
+                                    } else {
+                                        //go to backstack
+                                        webView.goBack();
+                                    }
+
+
                                 }
                             }
                         } else {
@@ -445,15 +454,9 @@ public class MainNavActivity extends AppCompatActivity
                                 alert.show();
                             } else {
 
-                                //go to backstack
-
                                 if (webView.getUrl().equals(webView.getOriginalUrl())) {
                                     //if landing url is original the first go to main url
                                     webView.loadUrl("https://smodas.wooplr.com/");
-                                } else {
-
-                                    //go to backstack
-                                    webView.goBack();
                                 }
                             }
                         }
@@ -551,27 +554,6 @@ public class MainNavActivity extends AppCompatActivity
         currentUrl = url;
         Log.v("OnPageStarted : ", url);
 
-//        if(url.equals("https://smodas.wooplr.com/")){
-//            if(backstack.size()>3){
-//
-//                    webView.loadUrl(backstack.get(backstack.size()-2));
-//                    Log.v("OnPageSt: ",backstack.get(backstack.size()-2));
-//                    backstack.remove(backstack.size()-2);
-//
-//
-//            }
-//
-//        }
-
-
-        if (webView.getUrl().equals("https://smodas.wooplr.com/dashboard/feed")) {
-            webView.onBackPressed();
-//            webView.loadUrl(mUrlStack.get(mUrlStack.size()-3));
-//            Log.v("OnPageStarted -3 : ", mUrlStack.get(mUrlStack.size()-3));
-
-        } else if (webView.getUrl().equals("https://www.wooplr.com/account/login-new")) {
-            webView.loadUrl("https://smodas.wooplr.com/");
-        }
 
 //        if(!url.contains("https://")){
 //            dialog.dismiss();
@@ -583,8 +565,44 @@ public class MainNavActivity extends AppCompatActivity
     @Override
     public void onPageFinished(String url) {
         dialog.dismiss();
-        backstack.add(url);
+        if (backstack.size() > 2) {
+            if (!backstack.get(backstack.size() - 1).equals(url)) {
+                if (!url.equals("https://smodas.wooplr.com/")) {
+                    if (!url.equals("https://smodas.wooplr.com/dashboard/feed"))
+                        backstack.add(url);
+                }
+            }
+        } else {
+            backstack.add(url);
+        }
+
+
+        if (webView.getUrl().equals("https://smodas.wooplr.com/dashboard/feed")) {
+            if (backstack.size() > 3) {
+
+                webView.loadUrl(backstack.get(backstack.size() - 2));
+                Log.v("OnPageFini: ", backstack.get(backstack.size() - 2));
+                backstack.remove(backstack.size() - 1);
+
+
+            }
+
+        } else if (webView.getUrl().equals("https://www.wooplr.com/account/login-new")) {
+            webView.loadUrl("https://smodas.wooplr.com/");
+        }
+
         Log.v("OnPageFinished : ", url);
+        if (url.equals("https://smodas.wooplr.com/")) {
+            if (backstack.size() > 3) {
+
+                webView.loadUrl(backstack.get(backstack.size() - 2));
+                Log.v("OnPageFini: ", backstack.get(backstack.size() - 2));
+                backstack.remove(backstack.size() - 1);
+
+
+            }
+
+        }
 
     }
 
