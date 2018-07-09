@@ -63,6 +63,7 @@ public class MainNavActivity extends AppCompatActivity
     private AlertDialog dialog;
     private DrawerLayout drawer;
     private String NotifUrl = "";
+    private String mCurrentURL = "";
     private Context mContext;
     private ValueEventListener valueEventListener;
     private AgentWeb.PreAgentWeb mPreAgentWeb;
@@ -142,6 +143,7 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 dialog.show();
+                mCurrentURL = url;
             }
 
             @Override
@@ -176,7 +178,30 @@ public class MainNavActivity extends AppCompatActivity
             setupWebView("https://smodas.wooplr.com/");
             return true;
         }
-        return super.onKeyDown(keyCode, event);
+
+        if(mCurrentURL.equals("https://smodas.wooplr.com/")){
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
+            builder.setTitle(R.string.app_name);
+            builder.setIcon(R.mipmap.ic_launcher);
+            builder.setMessage("Do you want to exit?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+            return true;
+        }else {
+            return super.onKeyDown(keyCode, event);
+        }
+
     }
 
     @Override
