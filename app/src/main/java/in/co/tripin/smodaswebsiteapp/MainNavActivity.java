@@ -28,6 +28,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -40,19 +41,20 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Logger;
 import com.google.firebase.database.ValueEventListener;
+import com.just.agentweb.AgentWeb;
+import com.just.agentweb.AgentWebView;
 import com.keiferstone.nonet.NoNet;
 
 import java.util.ArrayList;
 
 import dmax.dialog.SpotsDialog;
-import im.delight.android.webview.AdvancedWebView;
 import in.co.tripin.smodaswebsiteapp.models.UserPojo;
 
 public class MainNavActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, AdvancedWebView.Listener {
+        implements NavigationView.OnNavigationItemSelectedListener {
 
-    private AdvancedWebView webView;
     private FirebaseAuth mAuth;
+    private LinearLayout mLin;
     LinearLayout mNotification, mLogOut, mRedeem, mHelp, mReturn;
     LinearLayout mTwitter, mFacebook, myoututbe, mInstagram, mRate;
     private TextView mUserName;
@@ -64,14 +66,16 @@ public class MainNavActivity extends AppCompatActivity
     private String currentUrl = "";
     private Context mContext;
     private ValueEventListener valueEventListener;
-    private ArrayList<String> backstack;
+    private AgentWeb.PreAgentWeb mPreAgentWeb;
+    private AgentWeb mAgentWeb;
+    private WebViewClient mWebViewClient;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_nav);
-        backstack = new ArrayList<>();
 
         NoNet.monitor(this)
                 .poll()
@@ -83,7 +87,7 @@ public class MainNavActivity extends AppCompatActivity
         mAuth = FirebaseAuth.getInstance();
         dialog = new SpotsDialog.Builder()
                 .setContext(this)
-                .setCancelable(false)
+                .setCancelable(true)
                 .setMessage("Loading")
                 .build();
 
@@ -94,11 +98,13 @@ public class MainNavActivity extends AppCompatActivity
 
         getUserData();
 
-        setupWebView();
         init();
+        buildWebView();
+        setupWebView("https://smodas.wooplr.com/");
+
         setListners();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -107,34 +113,71 @@ public class MainNavActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
 //        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 //                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 //        drawer.addDrawerListener(toggle);
 //        toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    private void buildWebView(){
+
+        mWebViewClient = new WebViewClient(){
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                dialog.show();
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                dialog.dismiss();
+            }
+        };
+
+        mPreAgentWeb = AgentWeb.with(this)
+                .setAgentWebParent(mLin, new LinearLayout.LayoutParams(-1, -1))
+                .useDefaultIndicator()
+                .setWebViewClient (mWebViewClient)
+                .createAgentWeb()
+                .ready();
+
+
+    }
+
+    private void setupWebView(String url) {
+      mAgentWeb = mPreAgentWeb.go(url);
+    }
+
     @Override
-    protected void onResume() {
-        super.onResume();
-        webView.onResume();
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if (mAgentWeb.handleKeyEvent(keyCode, event)) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override
     protected void onPause() {
+        mAgentWeb.getWebLifeCycle().onPause();
         super.onPause();
-        webView.onPause();
+
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        webView.onDestroy();
+    protected void onResume() {
+        mAgentWeb.getWebLifeCycle().onResume();
+        super.onResume();
     }
-
+    @Override
+    public void onDestroy() {
+        mAgentWeb . getWebLifeCycle () . onDestroy ();
+        super . onDestroy ();
+    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -178,7 +221,7 @@ public class MainNavActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         View header = navigationView.getHeaderView(0);
 
-        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = findViewById(R.id.drawer_layout);
 
         mFacebook = header.findViewById(R.id.facebook);
         mInstagram = header.findViewById(R.id.instagram);
@@ -194,6 +237,7 @@ public class MainNavActivity extends AppCompatActivity
         mRedeem = header.findViewById(R.id.redeem);
         mHelp = header.findViewById(R.id.help);
         mReturn = header.findViewById(R.id.returnn);
+        mLin = findViewById(R.id.llmain);
 
     }
 
@@ -214,9 +258,6 @@ public class MainNavActivity extends AppCompatActivity
                     intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/" + "221550015100537"));
                     startActivity(intent);
                 }
-
-//                drawer.closeDrawer(GravityCompat.START);
-//                webView.loadUrl("https://www.facebook.com/SM-Interconnect-343886469465718/");
 
             }
         });
@@ -295,7 +336,7 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.closeDrawer(GravityCompat.START);
-                webView.loadUrl("http://tiny.cc/SMODASbookmyshowoffer");
+                setupWebView("http://tiny.cc/SMODASbookmyshowoffer");
             }
         });
 
@@ -303,7 +344,7 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.closeDrawer(GravityCompat.START);
-                webView.loadUrl("https://smodas.wooplr.com/faq");
+                setupWebView("https://smodas.wooplr.com/faqr");
             }
         });
 
@@ -311,31 +352,13 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.closeDrawer(GravityCompat.START);
-                webView.loadUrl("https://smodas.wooplr.com/check-order-status");
+                setupWebView("https://smodas.wooplr.com/check-order-status");
             }
         });
 
     }
 
 
-    private void setupWebView() {
-        webView = findViewById(R.id.webview);
-        webView.getSettings().setSupportMultipleWindows(true);
-        webView.setListener(this, this);
-        if (getIntent().getExtras() == null) {
-            webView.loadUrl("https://smodas.wooplr.com/");
-        } else {
-            if (getIntent().getExtras().getString("url") == null) {
-                webView.loadUrl("https://smodas.wooplr.com/");
-            } else {
-                if (getIntent().getExtras().getString("url").isEmpty()) {
-                    webView.loadUrl("https://smodas.wooplr.com/");
-                } else {
-                    webView.loadUrl(getIntent().getExtras().getString("url"));
-                }
-            }
-        }
-    }
 
     @Override
     protected void onStop() {
@@ -343,131 +366,6 @@ public class MainNavActivity extends AppCompatActivity
 
     }
 
-//    @Override
-//    public void onBackPressed() {
-//        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-//        if (drawer.isDrawerOpen(GravityCompat.START)) {
-//            drawer.closeDrawer(GravityCompat.START);
-//        } else {
-//            if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
-//                AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
-//                builder.setTitle(R.string.app_name);
-//                builder.setIcon(R.mipmap.ic_launcher);
-//                builder.setMessage("Do you want to exit?")
-//                        .setCancelable(false)
-//                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-//                            public void onClick(DialogInterface dialog, int id) {
-//                                finish();
-//                            }
-//                        })
-//                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-//                            public void onClick(DialogInterface dialog, int id) {
-//                                dialog.cancel();
-//                            }
-//                        });
-//                AlertDialog alert = builder.create();
-//                alert.show();
-//            } else {
-//
-//                //go to backstack
-//
-//                if (webView.getUrl().equals(webView.getOriginalUrl())) {
-//                    //if landing url is original the first go to main url
-//                    webView.loadUrl("https://smodas.wooplr.com/");
-//                } else {
-//
-//                    //go to backstack
-//                    webView.goBack();
-//                }
-//            }
-//
-//        }
-//    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_BACK:
-                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-                    if (drawer.isDrawerOpen(GravityCompat.START)) {
-                        drawer.closeDrawer(GravityCompat.START);
-                    } else {
-                        if (webView.canGoBack()) {
-                            if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
-                                builder.setTitle(R.string.app_name);
-                                builder.setIcon(R.mipmap.ic_launcher);
-                                builder.setMessage("Do you want to exit?")
-                                        .setCancelable(false)
-                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                finish();
-                                            }
-                                        })
-                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-                                            }
-                                        });
-                                AlertDialog alert = builder.create();
-                                alert.show();
-                            } else {
-
-                                //go to backstack
-
-                                if (webView.getUrl().equals(webView.getOriginalUrl())) {
-                                    //if landing url is original the first go to main url
-                                    webView.loadUrl("https://smodas.wooplr.com/");
-                                } else {
-
-                                    if (backstack.get(backstack.size() - 1).contains("sizeModal")) {
-                                        webView.loadUrl(backstack.get(backstack.size() - 2));
-                                        backstack.remove(backstack.size() - 1);
-
-                                    } else {
-                                        //go to backstack
-                                        webView.goBack();
-                                    }
-
-
-                                }
-                            }
-                        } else {
-                            if (webView.getUrl().equals("https://smodas.wooplr.com/")) {
-                                AlertDialog.Builder builder = new AlertDialog.Builder(MainNavActivity.this);
-                                builder.setTitle(R.string.app_name);
-                                builder.setIcon(R.mipmap.ic_launcher);
-                                builder.setMessage("Do you want to exit?")
-                                        .setCancelable(false)
-                                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                finish();
-                                            }
-                                        })
-                                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                dialog.cancel();
-                                            }
-                                        });
-                                AlertDialog alert = builder.create();
-                                alert.show();
-                            } else {
-
-                                if (webView.getUrl().equals(webView.getOriginalUrl())) {
-                                    //if landing url is original the first go to main url
-                                    webView.loadUrl("https://smodas.wooplr.com/");
-                                }
-                            }
-                        }
-                    }
-
-                    return true;
-            }
-
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -548,79 +446,8 @@ public class MainNavActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onPageStarted(String url, Bitmap favicon) {
-        dialog.show();
-        currentUrl = url;
-        Log.v("OnPageStarted : ", url);
 
 
-//        if(!url.contains("https://")){
-//            dialog.dismiss();
-//            webView.onBackPressed();
-//        }
-
-    }
-
-    @Override
-    public void onPageFinished(String url) {
-        dialog.dismiss();
-        if (backstack.size() > 2) {
-            if (!backstack.get(backstack.size() - 1).equals(url)) {
-                if (!url.equals("https://smodas.wooplr.com/")) {
-                    if (!url.equals("https://smodas.wooplr.com/dashboard/feed"))
-                        backstack.add(url);
-                }
-            }
-        } else {
-            backstack.add(url);
-        }
-
-
-        if (webView.getUrl().equals("https://smodas.wooplr.com/dashboard/feed")) {
-            if (backstack.size() > 3) {
-
-                webView.loadUrl(backstack.get(backstack.size() - 2));
-                Log.v("OnPageFini: ", backstack.get(backstack.size() - 2));
-                backstack.remove(backstack.size() - 1);
-
-
-            }
-
-        } else if (webView.getUrl().equals("https://www.wooplr.com/account/login-new")) {
-            webView.loadUrl("https://smodas.wooplr.com/");
-        }
-
-        Log.v("OnPageFinished : ", url);
-        if (url.equals("https://smodas.wooplr.com/")) {
-            if (backstack.size() > 3) {
-
-                webView.loadUrl(backstack.get(backstack.size() - 2));
-                Log.v("OnPageFini: ", backstack.get(backstack.size() - 2));
-                backstack.remove(backstack.size() - 1);
-
-
-            }
-
-        }
-
-    }
-
-    @Override
-    public void onPageError(int errorCode, String description, String failingUrl) {
-        dialog.dismiss();
-        webView.onBackPressed();
-    }
-
-    @Override
-    public void onDownloadRequested(String url, String suggestedFilename, String mimeType, long contentLength, String contentDisposition, String userAgent) {
-
-    }
-
-    @Override
-    public void onExternalPageRequest(String url) {
-
-    }
 
     void rateApp() {
         Uri uri = Uri.parse("market://details?id=" + mContext.getPackageName());
@@ -648,25 +475,16 @@ public class MainNavActivity extends AppCompatActivity
             if (requestCode == 1) {
                 Toast.makeText(getApplicationContext(), "Notification Redirect!", Toast.LENGTH_SHORT).show();
                 String url = intent.getStringExtra("url");
-                webView.loadUrl(url);
+                Log.v("onActResult: ",url);
+
+                setupWebView(url);
 
             }
-        } else {
-            Toast.makeText(getApplicationContext(), "Address not selected!", Toast.LENGTH_SHORT).show();
         }
 
 
     }
 
-    public static Intent getOpenFacebookIntent(Context context) {
-
-        try {
-            context.getPackageManager().getPackageInfo("com.facebook.katana", 0);
-            return new Intent(Intent.ACTION_VIEW, Uri.parse("fb://page/173533596648724"));
-        } catch (Exception e) {
-            return new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/saniva.maniayar"));
-        }
-    }
 
 
 }
