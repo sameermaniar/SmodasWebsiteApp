@@ -62,8 +62,7 @@ public class MainNavActivity extends AppCompatActivity
     private ImageView mEditProfile;
     private AlertDialog dialog;
     private DrawerLayout drawer;
-    private String lastUrl = "";
-    private String currentUrl = "";
+    private String NotifUrl = "";
     private Context mContext;
     private ValueEventListener valueEventListener;
     private AgentWeb.PreAgentWeb mPreAgentWeb;
@@ -100,7 +99,21 @@ public class MainNavActivity extends AppCompatActivity
 
         init();
         buildWebView();
-        setupWebView("https://smodas.wooplr.com/");
+
+        if(getIntent().getExtras()!=null){
+            if(getIntent().getExtras().getString("url")!=null){
+                if(!getIntent().getExtras().getString("url").isEmpty()){
+                    setupWebView(getIntent().getExtras().getString("url"));
+                    NotifUrl = getIntent().getExtras().getString("url");
+                }else {
+                    setupWebView("https://smodas.wooplr.com/");
+                }
+            }else {
+                setupWebView("https://smodas.wooplr.com/");
+            }
+        }else {
+            setupWebView("https://smodas.wooplr.com/");
+        }
 
         setListners();
 
@@ -156,6 +169,11 @@ public class MainNavActivity extends AppCompatActivity
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
         if (mAgentWeb.handleKeyEvent(keyCode, event)) {
+            return true;
+        }
+
+        if(!NotifUrl.isEmpty()&&!NotifUrl.equals("https://smodas.wooplr.com/")){
+            setupWebView("https://smodas.wooplr.com/");
             return true;
         }
         return super.onKeyDown(keyCode, event);
