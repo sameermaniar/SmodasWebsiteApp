@@ -232,16 +232,29 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 dialog.dismiss();
-                UserPojo userPojo = dataSnapshot.getValue(UserPojo.class);
-                if (userPojo != null) {
-                    if (userPojo.getmUserFullName() != null) {
-                        if (!userPojo.getmUserFullName().isEmpty()) {
-                            mUserName.setText(userPojo.getmUserFullName());
-                        } else {
-                            mUserName.setText(userPojo.getmUserMobile());
+
+                if(dataSnapshot.exists()){
+                    UserPojo userPojo = dataSnapshot.getValue(UserPojo.class);
+                    if (userPojo != null) {
+                        if (userPojo.getmUserFullName() != null) {
+                            if (!userPojo.getmUserFullName().isEmpty()) {
+                                mUserName.setText(userPojo.getmUserFullName());
+                            } else {
+                                mUserName.setText(userPojo.getmUserMobile());
+                            }
                         }
                     }
+                }else {
+                    FirebaseDatabase.getInstance()
+                            .getReference()
+                            .child("users")
+                            .child(FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber()).removeEventListener(valueEventListener);
+                    Toast.makeText(getApplicationContext(),"User Not Found, Sign UP!",Toast.LENGTH_LONG).show();
+                    FirebaseAuth.getInstance().signOut();
+                    startActivity(new Intent(MainNavActivity.this, AuthLandingActivity.class));
+                    finish();
                 }
+
             }
 
             @Override
@@ -387,7 +400,7 @@ public class MainNavActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 drawer.closeDrawer(GravityCompat.START);
-                setupWebView("https://smodas.wooplr.com/faqr");
+                setupWebView("https://smodas.wooplr.com/faq");
             }
         });
 

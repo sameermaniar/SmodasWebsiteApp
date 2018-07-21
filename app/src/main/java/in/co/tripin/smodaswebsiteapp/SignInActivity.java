@@ -31,6 +31,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Logger;
 import com.google.firebase.database.ValueEventListener;
 import com.keiferstone.nonet.NoNet;
 
@@ -108,6 +109,8 @@ public class SignInActivity extends AppCompatActivity {
         mAwesomeValidation.addValidation(this, R.id.countrycode, RegexTemplate.NOT_EMPTY, R.string.err_mobile);
         String regexPassword = ".{4,}";
         mAwesomeValidation.addValidation(this, R.id.password, regexPassword, R.string.invalid_password);
+        String regexMoblie = ".{10,}";
+        mAwesomeValidation.addValidation(this, R.id.mobile, regexMoblie,R.string.err_mobile);
 
     }
 
@@ -122,6 +125,8 @@ public class SignInActivity extends AppCompatActivity {
                         final FirebaseDatabase database = FirebaseDatabase.getInstance();
                         DatabaseReference myRef = database.getReference("users");
                         dialog.show();
+
+                        Log.v("Number: ", mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim());
 
                         myRef.child(mCountryCode.getText().toString().trim() + mMobile.getText().toString().trim()).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -290,13 +295,14 @@ public class SignInActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
-
                             FirebaseUser user = task.getResult().getUser();
+                            otpDialog.dismiss();
+
                             if(isForgotPassword){
-                                otpDialog.dismiss();
 
                                 Intent i =  new Intent(SignInActivity.this,ForgetPasswordActivity.class);
                                 i.putExtra("mobile",user.getPhoneNumber());
@@ -310,11 +316,14 @@ public class SignInActivity extends AppCompatActivity {
                         } else {
                             // Sign in failed, display a message and update the UI
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            dialog.dismiss();
+                            Toast.makeText(getApplicationContext(),"OTP Wrong! Try Again",Toast.LENGTH_LONG).show();
                             if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
                                 // The verification code entered was invalid
                             }
                         }
                     }
+
                 });
     }
 

@@ -122,6 +122,11 @@ public class SignUpActivity extends AppCompatActivity {
         mAwesomeValidation.addValidation(this, R.id.password, RegexTemplate.NOT_EMPTY, R.string.err_password);
         String regexPassword = ".{4,}";
         mAwesomeValidation.addValidation(this, R.id.password, regexPassword, R.string.invalid_password);
+        String regexMoblie = ".{10,}";
+        mAwesomeValidation.addValidation(this, R.id.mobile, regexMoblie,R.string.err_mobile);
+
+
+
 
 
     }
@@ -162,7 +167,7 @@ public class SignUpActivity extends AppCompatActivity {
                     createAccount.setText("Sign Up");
                     Toast.makeText(getApplicationContext(),"Mobile Already Registered, Sign In!",Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(SignUpActivity.this,SignInActivity.class);
-                    intent.putExtra("mobile",s);
+                    intent.putExtra("mobile",mMobile.getText().toString().trim());
                     startActivity(intent);
                     finish();
                 }else {
@@ -227,7 +232,7 @@ public class SignUpActivity extends AppCompatActivity {
             public void onVerificationFailed(FirebaseException e) {
                 // This callback is invoked in an invalid request for verification is made,
                 // for instance if the the phone number format is not valid.
-                Log.w(TAG, "onVerificationFailed", e);
+                Log.v(TAG, "onVerificationFailed", e);
                 dialog.dismiss();
                 if (e instanceof FirebaseAuthInvalidCredentialsException) {
                     // Invalid request
